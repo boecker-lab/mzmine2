@@ -16,7 +16,6 @@ import net.sf.mzmine.parameters.Parameter;
 import net.sf.mzmine.parameters.dialogs.ParameterSetupDialog;
 import net.sf.mzmine.parameters.impl.SimpleParameterSet;
 import net.sf.mzmine.parameters.parametertypes.BooleanParameter;
-import net.sf.mzmine.parameters.parametertypes.ComboParameter;
 import net.sf.mzmine.parameters.parametertypes.MassListParameter;
 import net.sf.mzmine.parameters.parametertypes.filenames.FileNameParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsParameter;
@@ -27,9 +26,6 @@ import java.awt.*;
 
 public class SiriusExportParameters extends SimpleParameterSet 
 {
-    public static final String ROUND_MODE_MAX = "Maximum";
-    public static final String ROUND_MODE_SUM = "Sum";
-  
     public static final PeakListsParameter PEAK_LISTS = new PeakListsParameter();
     
     public static final FileNameParameter FILENAME = new FileNameParameter(
@@ -44,12 +40,6 @@ public class SiriusExportParameters extends SimpleParameterSet
 //            "Fractional m/z values", "If checked, write fractional m/z values", 
 //            true);
    
-    public static final ComboParameter <String> ROUND_MODE = 
-            new ComboParameter <> (
-                    "Merging Mode", 
-                    "Determines how to merge intensities with the same m/z values",
-                    new String[] {ROUND_MODE_MAX, ROUND_MODE_SUM},
-                    ROUND_MODE_MAX);
 
     public static final BooleanParameter INCLUDE_MSSCAN = new BooleanParameter(
             "include MS1",
@@ -60,7 +50,7 @@ public class SiriusExportParameters extends SimpleParameterSet
     public static final MassListParameter MASS_LIST = new MassListParameter();          
     
     public SiriusExportParameters() {
-        super(new Parameter[]{PEAK_LISTS, FILENAME, ROUND_MODE, INCLUDE_MSSCAN, MASS_LIST});
+        super(new Parameter[]{PEAK_LISTS, FILENAME, INCLUDE_MSSCAN, MASS_LIST});
     }
     
     public ExitCode showSetupDialog(Window parent, boolean valueCheckRequired) { 
