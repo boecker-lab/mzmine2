@@ -19,74 +19,52 @@
 
 package net.sf.mzmine.modules.masslistmethods.chromatogrambuilder;
 
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Map.Entry;
-import java.util.Vector;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
-
-import net.sf.mzmine.datamodel.DataPoint;
-import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.IsotopePattern;
-import net.sf.mzmine.datamodel.RawDataFile;
-import net.sf.mzmine.datamodel.Scan;
+import net.sf.mzmine.datamodel.*;
 import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.util.MathUtils;
 import net.sf.mzmine.util.ScanUtils;
 
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.Map.Entry;
+
 /**
  * Chromatogram implementing ChromatographicPeak.
  */
 public class Chromatogram implements Feature {
-    
+
+    private final int scanNumbers[];
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
     private SimplePeakInformation peakInfo;
-    
     // Data file of this chromatogram
     private RawDataFile dataFile;
-
     // Data points of the chromatogram (map of scan number -> m/z peak)
     private Hashtable<Integer, DataPoint> dataPointsMap;
-
     // Chromatogram m/z, RT, height, area
     private double mz, rt, height, area;
     private Double fwhm = null, tf = null, af = null;
-
     // Top intensity scan, fragment scan
     private int representativeScan = -1, fragmentScan = -1;
-
     // Ranges of raw data points
     private Range<Double> rawDataPointsIntensityRange, rawDataPointsMZRange,
             rawDataPointsRTRange;
-
     // A set of scan numbers of a segment which is currently being connected
     private Vector<Integer> buildingSegment;
-
     // Keep track of last added data point
     private DataPoint lastMzPeak;
-
     // Number of connected segments, which have been committed by
     // commitBuildingSegment()
     private int numOfCommittedSegments = 0;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern;
     private int charge = 0;
-
     // Victor Trevino
     private double mzSum = 0;
     private int mzN = 0;
-
-    private final int scanNumbers[];
-
-    public void outputChromToFile(){
-        System.out.println("does nothing");
-    }
 
     /**
      * Initializes this Chromatogram
@@ -101,10 +79,14 @@ public class Chromatogram implements Feature {
         buildingSegment = new Vector<Integer>(128);
     }
 
+    public void outputChromToFile() {
+        System.out.println("does nothing");
+    }
+
     /**
      * This method adds a MzPeak to this Chromatogram. All values of this
      * Chromatogram (rt, m/z, intensity and ranges) are updated on request
-     * 
+     *
      * @param mzValue
      */
     public void addMzPeak(int scanNumber, DataPoint mzValue) {
@@ -138,7 +120,7 @@ public class Chromatogram implements Feature {
     /**
      * This method returns a string with the basic information that defines this
      * peak
-     * 
+     *
      * @return String information
      */
     public String toString() {
@@ -352,11 +334,39 @@ public class Chromatogram implements Feature {
     public void setAsymmetryFactor(Double af) {
         this.af = af;
     }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
+
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
+
+    // kaidu edit
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 
 }

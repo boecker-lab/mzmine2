@@ -12,16 +12,17 @@
 
 package net.sf.mzmine.modules.peaklistmethods.io.siriusexport;
 
-import java.awt.Window;
-
 import net.sf.mzmine.parameters.Parameter;
 import net.sf.mzmine.parameters.dialogs.ParameterSetupDialog;
 import net.sf.mzmine.parameters.impl.SimpleParameterSet;
+import net.sf.mzmine.parameters.parametertypes.BooleanParameter;
 import net.sf.mzmine.parameters.parametertypes.ComboParameter;
 import net.sf.mzmine.parameters.parametertypes.MassListParameter;
 import net.sf.mzmine.parameters.parametertypes.filenames.FileNameParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsParameter;
 import net.sf.mzmine.util.ExitCode;
+
+import java.awt.*;
 
 
 public class SiriusExportParameters extends SimpleParameterSet 
@@ -49,11 +50,17 @@ public class SiriusExportParameters extends SimpleParameterSet
                     "Determines how to merge intensities with the same m/z values",
                     new String[] {ROUND_MODE_MAX, ROUND_MODE_SUM},
                     ROUND_MODE_MAX);
+
+    public static final BooleanParameter INCLUDE_MSSCAN = new BooleanParameter(
+            "include MS1",
+            "For each MS/MS scan include also the corresponding MS scan (additionally to possibly detected isotope patterns). MS1 scans might contain valuable informations that can be processed by SIRIUS. But they increase file size significantly",
+            true
+    );
     
     public static final MassListParameter MASS_LIST = new MassListParameter();          
     
-    public SiriusExportParameters() {    	
-    	super(new Parameter[] {PEAK_LISTS, FILENAME, ROUND_MODE, MASS_LIST});
+    public SiriusExportParameters() {
+        super(new Parameter[]{PEAK_LISTS, FILENAME, ROUND_MODE, INCLUDE_MSSCAN, MASS_LIST});
     }
     
     public ExitCode showSetupDialog(Window parent, boolean valueCheckRequired) { 

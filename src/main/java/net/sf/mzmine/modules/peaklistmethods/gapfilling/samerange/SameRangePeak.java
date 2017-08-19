@@ -19,44 +19,33 @@
 
 package net.sf.mzmine.modules.peaklistmethods.gapfilling.samerange;
 
-import java.util.TreeMap;
-
-import javax.annotation.Nonnull;
-
-import net.sf.mzmine.datamodel.DataPoint;
-import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.IsotopePattern;
-import net.sf.mzmine.datamodel.RawDataFile;
-import net.sf.mzmine.datamodel.Scan;
+import com.google.common.collect.Range;
+import com.google.common.primitives.Ints;
+import net.sf.mzmine.datamodel.*;
+import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
 import net.sf.mzmine.util.MathUtils;
 import net.sf.mzmine.util.PeakUtils;
 import net.sf.mzmine.util.ScanUtils;
 
-import com.google.common.collect.Range;
-import com.google.common.primitives.Ints;
-import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 /**
  * This class represents a manually picked chromatographic peak.
  */
 class SameRangePeak implements Feature {
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
     private SimplePeakInformation peakInfo;
-    
     private RawDataFile dataFile;
-
     // Raw M/Z, RT, Height and Area
     private double mz, rt, height, area;
     private Double fwhm = null, tf = null, af = null;
-
     // Boundaries of the peak
     private Range<Double> rtRange, mzRange, intensityRange;
-
     // Map of scan number and data point
     private TreeMap<Integer, DataPoint> mzPeakMap;
-
     // Number of most intense fragment scan
     private int fragmentScan, representativeScan;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern;
@@ -82,6 +71,10 @@ class SameRangePeak implements Feature {
      */
     public double getMZ() {
 	return mz;
+    }
+
+    public void setMZ(double mz) {
+        this.mz = mz;
     }
 
     /**
@@ -149,7 +142,7 @@ class SameRangePeak implements Feature {
 
     /**
      * Adds a new data point to this peak
-     * 
+     *
      * @param scanNumber
      * @param dataPoints
      * @param rawDataPoints
@@ -252,10 +245,6 @@ class SameRangePeak implements Feature {
 
     }
 
-    public void setMZ(double mz) {
-	this.mz = mz;
-    }
-
     public int getRepresentativeScanNumber() {
 	return representativeScan;
     }
@@ -308,13 +297,40 @@ class SameRangePeak implements Feature {
     public void outputChromToFile(){
         int nothing = -1;
     }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
+
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
     //End dulab Edit
+
+    // kaidu edit
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 
 
 }

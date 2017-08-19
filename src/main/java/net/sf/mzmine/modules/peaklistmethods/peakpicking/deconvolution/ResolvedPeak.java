@@ -19,57 +19,46 @@
 
 package net.sf.mzmine.modules.peaklistmethods.peakpicking.deconvolution;
 
-import java.util.Arrays;
-
-import javax.annotation.Nonnull;
-
-import net.sf.mzmine.datamodel.DataPoint;
-import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.IsotopePattern;
-import net.sf.mzmine.datamodel.RawDataFile;
-import net.sf.mzmine.datamodel.Scan;
+import com.google.common.collect.Range;
+import net.sf.mzmine.datamodel.*;
 import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
+import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
 import net.sf.mzmine.util.MathUtils;
 import net.sf.mzmine.util.PeakUtils;
 import net.sf.mzmine.util.ScanUtils;
 
-import com.google.common.collect.Range;
-import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 /**
  * ResolvedPeak
  * 
  */
 public class ResolvedPeak implements Feature {
-    
-    private SimplePeakInformation peakInfo;
 
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
+    private SimplePeakInformation peakInfo;
     // Data file of this chromatogram
     private RawDataFile dataFile;
-
     // Chromatogram m/z, RT, height, area
     private double mz, rt, height, area;
     private Double fwhm = null, tf = null, af = null;
-
     // Scan numbers
     private int scanNumbers[];
-
     // We store the values of data points as double[] arrays in order to save
     // memory, which would be wasted by keeping a lot of instances of
     // SimpleDataPoint (each instance takes 16 or 32 bytes of extra memory)
     private double dataPointMZValues[], dataPointIntensityValues[];
-
     // Top intensity scan, fragment scan
     private int representativeScan, fragmentScan;
-
     // Ranges of raw data points
     private Range<Double> rawDataPointsIntensityRange, rawDataPointsMZRange,
             rawDataPointsRTRange;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern = null;
     private int charge = 0;
+
     /**
      * Initializes this peak using data points from a given chromatogram -
      * regionStart marks the index of the first data point (inclusive),
@@ -101,7 +90,7 @@ public class ResolvedPeak implements Feature {
         for (int i = 0; i < scanNumbers.length; i++) {
 
             dataPointMZValues[i] = mzValue;
-            
+
             DataPoint dp = chromatogram.getDataPoint(scanNumbers[i]);
             if (dp == null) {
                 continue;
@@ -138,10 +127,10 @@ public class ResolvedPeak implements Feature {
                 height = dp.getIntensity();
                 rt = dataFile.getScan(scanNumbers[i]).getRetentionTime();
                 representativeScan = scanNumbers[i];
-                
+
             }
         }
-        
+
         // Calculate median m/z
         mz = MathUtils.calcQuantile(dataPointMZValues, 0.5f);
 
@@ -182,12 +171,12 @@ public class ResolvedPeak implements Feature {
         }
         Range<Double> searchingRangeRT = Range
         		.closed(lowerBoundRT,upperBoundRT);
-        
+
         if (msmsRange == 0)
         	searchingRange = rawDataPointsMZRange;
         if (RTRangeMSMS == 0)
         	searchingRangeRT = dataFile.getDataRTRange(1);
-        
+
         fragmentScan = ScanUtils.findBestFragmentScan(dataFile,
         		searchingRangeRT, searchingRange);
 
@@ -223,7 +212,7 @@ public class ResolvedPeak implements Feature {
     /**
      * This method returns a string with the basic information that defines this
      * peak
-     * 
+     *
      * @return String information
      */
     public String toString() {
@@ -318,11 +307,38 @@ public class ResolvedPeak implements Feature {
     public void outputChromToFile(){
         int nothing = -1;
     }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
+
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
     //End dulab Edit
+
+    // kaidu edit
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 }

@@ -19,26 +19,24 @@
 
 package net.sf.mzmine.modules.peaklistmethods.peakpicking.shapemodeler.peakmodels;
 
-import java.util.Iterator;
-import java.util.TreeMap;
-
-import javax.annotation.Nonnull;
-
+import com.google.common.collect.Range;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.IsotopePattern;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
+import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
 import net.sf.mzmine.util.PeakUtils;
 import net.sf.mzmine.util.RangeUtils;
 
-import com.google.common.collect.Range;
-import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 public class GaussianPeakModel implements Feature {
+    private static double CONST = 2.354820045;
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
     private SimplePeakInformation peakInfo;
     private double FWHM, partC, part2C2;
-
     // Peak information
     private double rt, height, mz, area;
     private Double fwhm = null, tf = null, af = null;
@@ -49,13 +47,10 @@ public class GaussianPeakModel implements Feature {
     private Range<Double> rawDataPointsIntensityRange, rawDataPointsMZRange,
 	    rawDataPointsRTRange;
     private TreeMap<Integer, DataPoint> dataPointsMap;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern;
     private int charge = 0;
-
-    private static double CONST = 2.354820045;
 
     public GaussianPeakModel(Feature originalDetectedShape, int[] scanNumbers,
 	    double[] intensities, double[] retentionTimes, double resolution) {
@@ -120,96 +115,10 @@ public class GaussianPeakModel implements Feature {
 
     }
 
-    //dulab Edit
-    public void outputChromToFile(){
-        int nothing = -1;
-    }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
-    public SimplePeakInformation getPeakInformation(){
-        return peakInfo;
-    }
-    //End dulab Edit
-
-    public double getArea() {
-	return area;
-    }
-
-    public @Nonnull RawDataFile getDataFile() {
-	return rawDataFile;
-    }
-
-    public double getHeight() {
-	return height;
-    }
-
-    public double getMZ() {
-	return mz;
-    }
-
-    public int getMostIntenseFragmentScanNumber() {
-	return fragmentScan;
-    }
-
-    public DataPoint getDataPoint(int scanNumber) {
-	return dataPointsMap.get(scanNumber);
-    }
-
-    public @Nonnull FeatureStatus getFeatureStatus() {
-	return status;
-    }
-
-    public double getRT() {
-	return rt;
-    }
-
-    public @Nonnull Range<Double> getRawDataPointsIntensityRange() {
-	return rawDataPointsIntensityRange;
-    }
-
-    public @Nonnull Range<Double> getRawDataPointsMZRange() {
-	return rawDataPointsMZRange;
-    }
-
-    public @Nonnull Range<Double> getRawDataPointsRTRange() {
-	return rawDataPointsRTRange;
-    }
-
-    public int getRepresentativeScanNumber() {
-	return representativeScan;
-    }
-
-    public @Nonnull int[] getScanNumbers() {
-	return scanNumbers;
-    }
-
-    public String getName() {
-	return "Gaussian peak " + PeakUtils.peakToString(this);
-    }
-
-    public IsotopePattern getIsotopePattern() {
-	return isotopePattern;
-    }
-
-    public void setIsotopePattern(@Nonnull IsotopePattern isotopePattern) {
-	this.isotopePattern = isotopePattern;
-    }
-
-    public double calculateIntensity(double retentionTime) {
-
-	// Using the Gaussian function we calculate the intensity at given m/z
-	double diff2 = (double) Math.pow(retentionTime - rt, 2);
-	double exponent = -1 * (diff2 / part2C2);
-	double eX = (double) Math.exp(exponent);
-	double intensity = height * eX;
-	return intensity;
-    }
-
     /**
      * This method calculates the width of the chromatographic peak at half
      * intensity
-     * 
+     *
      * @param listMzPeaks
      * @param height
      * @param RT
@@ -311,6 +220,106 @@ public class GaussianPeakModel implements Feature {
 	return aproximatedFWHM;
     }
 
+    //dulab Edit
+    public void outputChromToFile() {
+        int nothing = -1;
+    }
+    //End dulab Edit
+
+    public SimplePeakInformation getPeakInformation() {
+        return peakInfo;
+    }
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
+
+    public double getArea() {
+        return area;
+    }
+
+    public
+    @Nonnull
+    RawDataFile getDataFile() {
+        return rawDataFile;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public double getMZ() {
+        return mz;
+    }
+
+    public int getMostIntenseFragmentScanNumber() {
+        return fragmentScan;
+    }
+
+    public DataPoint getDataPoint(int scanNumber) {
+        return dataPointsMap.get(scanNumber);
+    }
+
+    public
+    @Nonnull
+    FeatureStatus getFeatureStatus() {
+        return status;
+    }
+
+    public double getRT() {
+        return rt;
+    }
+
+    public
+    @Nonnull
+    Range<Double> getRawDataPointsIntensityRange() {
+        return rawDataPointsIntensityRange;
+    }
+
+    public
+    @Nonnull
+    Range<Double> getRawDataPointsMZRange() {
+        return rawDataPointsMZRange;
+    }
+
+    public
+    @Nonnull
+    Range<Double> getRawDataPointsRTRange() {
+        return rawDataPointsRTRange;
+    }
+
+    public int getRepresentativeScanNumber() {
+        return representativeScan;
+    }
+
+    public
+    @Nonnull
+    int[] getScanNumbers() {
+        return scanNumbers;
+    }
+
+    public String getName() {
+        return "Gaussian peak " + PeakUtils.peakToString(this);
+    }
+
+    public IsotopePattern getIsotopePattern() {
+        return isotopePattern;
+    }
+
+    public void setIsotopePattern(@Nonnull IsotopePattern isotopePattern) {
+        this.isotopePattern = isotopePattern;
+    }
+
+    public double calculateIntensity(double retentionTime) {
+
+        // Using the Gaussian function we calculate the intensity at given m/z
+        double diff2 = (double) Math.pow(retentionTime - rt, 2);
+        double exponent = -1 * (diff2 / part2C2);
+        double eX = (double) Math.exp(exponent);
+        double intensity = height * eX;
+        return intensity;
+    }
+
     public int getCharge() {
 	return charge;
     }
@@ -318,7 +327,6 @@ public class GaussianPeakModel implements Feature {
     public void setCharge(int charge) {
 	this.charge = charge;
     }
-
 
     public Double getFWHM() {
         return fwhm;
@@ -340,8 +348,33 @@ public class GaussianPeakModel implements Feature {
         return af;
     }
 
+    // kaidu edit
+
     public void setAsymmetryFactor(Double af) {
         this.af = af;
     }
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 
 }

@@ -19,40 +19,18 @@
 
 package net.sf.mzmine.datamodel;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Range;
 import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This interface defines the properties of a detected peak
  */
 public interface Feature {
-
-    public enum FeatureStatus {
-
-	/**
-	 * Peak was not found
-	 */
-	UNKNOWN,
-
-	/**
-	 * Peak was found in primary peak picking
-	 */
-	DETECTED,
-
-	/**
-	 * Peak was estimated in secondary peak picking
-	 */
-	ESTIMATED,
-
-	/**
-	 * Peak was defined manually
-	 */
-	MANUAL
-
-    }
 
     /**
      * This method returns the status of the peak
@@ -152,24 +130,24 @@ public interface Feature {
     public Double getFWHM();
 
     /**
-     * This method returns the tailing factor of the peak
-     */
-    public Double getTailingFactor();
-
-    /**
-     * This method returns the asymmetry factor of the peak
-     */
-    public Double getAsymmetryFactor();
-
-    /**
      * Sets the full width at half maximum (FWHM)
      */
     public void setFWHM(Double fwhm);
 
     /**
+     * This method returns the tailing factor of the peak
+     */
+    public Double getTailingFactor();
+
+    /**
      * Sets the tailing factor
      */
     public void setTailingFactor(Double tf);
+
+    /**
+     * This method returns the asymmetry factor of the peak
+     */
+    public Double getAsymmetryFactor();
 
     /**
      * Sets the asymmetry factor
@@ -178,8 +156,59 @@ public interface Feature {
 
     //dulab Edit
     public void outputChromToFile();
-    public void setPeakInformation(SimplePeakInformation peakInfoIn);
+
     public SimplePeakInformation getPeakInformation();
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn);
+
+    /**
+     * Allow for arbitrary feature annotations. The type of annotation T should satisfy the following conditions:
+     * - it should be immutable
+     * - it should be no base type (like String, Double, ...)
+     * - it should be final (i.e. no subclasses and ideally no superclasses except Object)
+     * - it should be a simple data structure without too much internal logic
+     *
+     * @param type  class of the annotation
+     * @param value value to set
+     */
+    public <T> void set(Class<T> type, T value);
     //End dulab Edit
 
+    // kaidu edit
+
+    /**
+     * returns the given annotation or defaultValue, if the annotation is not set.
+     */
+    public <T> T get(Class<T> type, T defaultValue);
+
+    /**
+     * returns an immutable view on the annotations.
+     */
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations();
+
+    public enum FeatureStatus {
+
+        /**
+         * Peak was not found
+         */
+        UNKNOWN,
+
+        /**
+         * Peak was found in primary peak picking
+         */
+        DETECTED,
+
+        /**
+         * Peak was estimated in secondary peak picking
+         */
+        ESTIMATED,
+
+        /**
+         * Peak was defined manually
+         */
+        MANUAL
+
+    }
+
+    // end kaidu edit
 }

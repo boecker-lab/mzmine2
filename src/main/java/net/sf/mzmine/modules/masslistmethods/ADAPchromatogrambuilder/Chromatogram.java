@@ -22,31 +22,20 @@
 
 package net.sf.mzmine.modules.masslistmethods.ADAPchromatogrambuilder;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Vector;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
-
-import net.sf.mzmine.datamodel.DataPoint;
-import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.IsotopePattern;
-import net.sf.mzmine.datamodel.RawDataFile;
-import net.sf.mzmine.datamodel.Scan;
+import net.sf.mzmine.datamodel.*;
+import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.util.ScanUtils;
 
-import java.io.PrintWriter;
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.*;
-import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 
@@ -54,56 +43,43 @@ import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
  * Chromatogram implementing ChromatographicPeak.
  */
 public class Chromatogram implements Feature {
+    private final int scanNumbers[];
+    public int tmp_see_same_scan_count = 0;
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
     private SimplePeakInformation peakInfo;
-
     // Data file of this chromatogram
     private RawDataFile dataFile;
-
     // Data points of the chromatogram (map of scan number -> m/z peak)
     //private Hashtable<Integer, DataPoint> dataPointsMap;
     private HashMap<Integer, DataPoint> dataPointsMap;
-
     // Chromatogram m/z, RT, height, area. The mz value will be the highest points mz value
     private double mz, rt, height, area, weightedMz;
     private Double fwhm = null, tf = null, af = null;
-
     // Top intensity scan, fragment scan
     private int representativeScan = -1, fragmentScan = -1;
-
     // Ranges of raw data points
     private Range<Double> rawDataPointsIntensityRange, rawDataPointsMZRange,
             rawDataPointsRTRange;
-
     // A set of scan numbers of a segment which is currently being connected
     private Vector<Integer> buildingSegment;
     // A full list of all the scan numbers as points get added
     private List<Integer> chromScanList;
-
     // Keep track of last added data point
     private DataPoint lastMzPeak;
-
     // Number of connected segments, which have been committed by
     // commitBuildingSegment()
     private int numOfCommittedSegments = 0;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern;
     private int charge = 0;
-
     // Victor Trevino
     private double mzSum = 0;
     private int mzN = 0;
     private double weightedMzSum = 0;
     private int weightedMzN = 0;
     private double sumOfWeights = 0;
-    
     private double highPointMZ = 0;
-
-    private final int scanNumbers[];
-
-    public int tmp_see_same_scan_count = 0;
-
     /**
      * Initializes this Chromatogram
      */
@@ -117,15 +93,18 @@ public class Chromatogram implements Feature {
         buildingSegment = new Vector<Integer>();
         chromScanList = new ArrayList<Integer>();
     }
+
     public double getHighPointMZ(){
         return highPointMZ;
     }
+
     public void setHighPointMZ(double toSet){
         highPointMZ = toSet;
     }
+
     public List getIntensitiesForCDFOut(){
         // Need all scans with no intensity to be set to zero
-        
+
         List intensityList = new ArrayList();
 
         for (int curScanNum=0; curScanNum<scanNumbers.length; curScanNum++){
@@ -141,7 +120,6 @@ public class Chromatogram implements Feature {
 
     }
 
-    
     public int findNumberOfContinuousPointsAboveNoise(double noise){
         // sort the array containing all of the scan numbers of the point added
         // loop over the sorted array now.
@@ -161,8 +139,6 @@ public class Chromatogram implements Feature {
         DataPoint curDataPoint;
 
         for (int i=1; i < scanListLength; i ++ ){
-            
-
 
 
             curScanNum = chromScanList.get(i);
@@ -192,21 +168,20 @@ public class Chromatogram implements Feature {
 
         }
 
-        
 
         //System.out.println("bestCount");
         //System.out.println(bestCount);
-        
+
         // plus one because first point considered in advancing curcount is actualy going to be the second point/
         return bestCount+1;
-        
+
 
     }
 
     /**
      * This method adds a MzPeak to this Chromatogram. All values of this
      * Chromatogram (rt, m/z, intensity and ranges) are updated on request
-     * 
+     *
      * @param mzValue
      */
     public void addMzPeak(int scanNumber, DataPoint mzValue) {
@@ -225,7 +200,6 @@ public class Chromatogram implements Feature {
 
         }
 
-   
 
         dataPointsMap.put(scanNumber, mzValue);
         lastMzPeak = mzValue;
@@ -262,6 +236,7 @@ public class Chromatogram implements Feature {
     public double getMZ() {
         return mz;
     }
+
     /**
      * This method returns weighted mean of m/z values comprising the chromatogram
      */
@@ -269,11 +244,10 @@ public class Chromatogram implements Feature {
         return weightedMz;
     }
 
-
     /**
      * This method returns a string with the basic information that defines this
      * peak
-     * 
+     *
      * @return String information
      */
     public String toString() {
@@ -390,7 +364,6 @@ public class Chromatogram implements Feature {
         }
 
     }
-
 
     public void finishChromatogram() {
 
@@ -541,10 +514,37 @@ public class Chromatogram implements Feature {
         this.af = af;
     }
 
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
+
+    // kaidu edit
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 }

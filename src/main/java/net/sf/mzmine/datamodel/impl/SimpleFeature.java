@@ -19,45 +19,41 @@
 
 package net.sf.mzmine.datamodel.impl;
 
-import java.util.Arrays;
-
-import javax.annotation.Nonnull;
-
+import com.google.common.collect.Range;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.IsotopePattern;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.util.PeakUtils;
 
-import com.google.common.collect.Range;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 /**
  * This class is a simple implementation of the peak interface.
  */
 public class SimpleFeature implements Feature {
 
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
     private SimplePeakInformation peakInfo;
     private FeatureStatus peakStatus;
-    private RawDataFile dataFile;
 
+    // kaidu edit
+    private RawDataFile dataFile;
     // Scan numbers
     private int scanNumbers[];
-
     private DataPoint dataPointsPerScan[];
-
     // M/Z, RT, Height and Area, FWHM, Tailing factor, Asymmetry factor
     private double mz, rt, height, area;
-    private Double fwhm, tf, af;
 
+    // end kaidu edit
+    private Double fwhm, tf, af;
     // Boundaries of the peak raw data points
     private Range<Double> rtRange, mzRange, intensityRange;
-
     // Number of representative scan
     private int representativeScan;
-
     // Number of most intense fragment scan
     private int fragmentScanNumber;
-
     // Isotope pattern. Null by default but can be set later by deisotoping
     // method.
     private IsotopePattern isotopePattern;
@@ -65,7 +61,7 @@ public class SimpleFeature implements Feature {
 
     /**
      * Initializes a new peak using given values
-     * 
+     *
      */
     public SimpleFeature(RawDataFile dataFile, double MZ, double RT,
 	    double height, double area, int[] scanNumbers,
@@ -133,6 +129,27 @@ public class SimpleFeature implements Feature {
 
     }
 
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
     /**
      * This method returns the status of the peak
      */
@@ -151,15 +168,15 @@ public class SimpleFeature implements Feature {
 	this.mz = mz;
     }
 
-    public void setRT(double rt) {
-	this.rt = rt;
-    }
-
     /**
      * This method returns retention time of the peak
      */
     public double getRT() {
 	return rt;
+    }
+
+    public void setRT(double rt) {
+        this.rt = rt;
     }
 
     /**
@@ -331,12 +348,21 @@ public class SimpleFeature implements Feature {
     public void outputChromToFile(){
         int nothing = -1;
     }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
-        this.peakInfo = peakInfoIn;
-    }
+
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
+        this.peakInfo = peakInfoIn;
+    }
     //End dulab Edit
+
+    // kaidu edit
+    @Override
+    public SimpleFeature clone() {
+        return new SimpleFeature(this);
+    }
+    // End kaidu edit
 
 }
