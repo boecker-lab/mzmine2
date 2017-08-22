@@ -33,8 +33,7 @@ public class SiriusExportParameters extends SimpleParameterSet
 	    "Name of the output MGF file. " +
 	    "Use pattern \"{}\" in the file name to substitute with peak list name. " +
 	    "(i.e. \"blah{}blah.mgf\" would become \"blahSourcePeakListNameblah.mgf\"). " +
-	    "If the file already exists, it will be overwritten.",
-	    "mgf");
+                "If the file already exists, it will be overwritten.", null);
     
 //    public static final BooleanParameter FRACTIONAL_MZ = new BooleanParameter(
 //            "Fractional m/z values", "If checked, write fractional m/z values", 
@@ -46,11 +45,17 @@ public class SiriusExportParameters extends SimpleParameterSet
             "For each MS/MS scan include also the corresponding MS scan (additionally to possibly detected isotope patterns). MS1 scans might contain valuable informations that can be processed by SIRIUS. But they increase file size significantly",
             true
     );
+
+    public static final BooleanParameter COMPRESS_FILE = new BooleanParameter(
+            "compress file",
+            "Write into compressed mgf.gz file instead of uncompressed plain text to reduce file size.",
+            true
+    );
     
     public static final MassListParameter MASS_LIST = new MassListParameter();          
     
     public SiriusExportParameters() {
-        super(new Parameter[]{PEAK_LISTS, FILENAME, INCLUDE_MSSCAN, MASS_LIST});
+        super(new Parameter[]{PEAK_LISTS, FILENAME, COMPRESS_FILE, INCLUDE_MSSCAN, MASS_LIST});
     }
     
     public ExitCode showSetupDialog(Window parent, boolean valueCheckRequired) { 

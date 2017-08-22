@@ -21,18 +21,18 @@ import net.sf.mzmine.util.PeakSorter;
 import net.sf.mzmine.util.SortingDirection;
 import net.sf.mzmine.util.SortingProperty;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 public class SiriusExportTask extends AbstractTask {
 
     private final static String plNamePattern = "{}";
-    protected final boolean includeMs1;
+    protected final boolean includeMs1, compress;
     private final PeakList[] peakLists;
 	private final File fileName;
 	// private final boolean fractionalMZ;
@@ -50,6 +50,7 @@ public class SiriusExportTask extends AbstractTask {
 
 		this.massListName = parameters.getParameter(SiriusExportParameters.MASS_LIST).getValue();
         this.includeMs1 = parameters.getParameter(SiriusExportParameters.INCLUDE_MSSCAN).getValue();
+        this.compress = parameters.getParameter(SiriusExportParameters.COMPRESS_FILE).getValue();
     }
 
 	public double getFinishedPercentage() {
@@ -84,9 +85,30 @@ public class SiriusExportTask extends AbstractTask {
 				String newFilename = fileName.getPath().replaceAll(Pattern.quote(plNamePattern), cleanPlName);
 				curFile = new File(newFilename);
 			}
+            if (compress) {
+                String n = curFile.getName().toLowerCase();
+                if (n.endsWith(".mgf.gz")) {
+                    // do nothing
+                } else if (n.endsWith(".mgf")) {
+                    // ad .gz
+                    curFile = new File(curFile.getPath() + ".gz");
+                } else {
+                    // add mgf.gz
+                    curFile = new File(curFile.getPath() + ".mgf.gz");
+                }
+            } else {
+                String n = curFile.getName().toLowerCase();
+                if (n.endsWith(".mgf")) {
+                    // do nothing
+                } else {
+                    // ad .gz
+                    curFile = new File(curFile.getPath() + ".mgf");
+                }
+            }
+
 
 			// Open file
-            try (final BufferedWriter bw = new BufferedWriter(new FileWriter(curFile, true))) {
+            try (final BufferedWriter bw = new BufferedWriter(getFileWriter(curFile))) {
                 exportPeakList(peakList, bw);
             } catch (IOException e) {
                 setStatus(TaskStatus.ERROR);
@@ -102,6 +124,14 @@ public class SiriusExportTask extends AbstractTask {
 		if (getStatus() == TaskStatus.PROCESSING)
 			setStatus(TaskStatus.FINISHED);
 	}
+
+    private Writer getFileWriter(File curFile) throws IOException {
+        if (compress) {
+            return new OutputStreamWriter(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(curFile), 16384), 16384), Charset.forName("UTF-8"));
+        } else {
+            return new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(curFile), 16384), Charset.forName("UTF-8"));
+        }
+    }
 
     private void exportPeakList(PeakList peakList, BufferedWriter writer) throws IOException {
 
@@ -296,8 +326,9 @@ public class SiriusExportTask extends AbstractTask {
     }
 
     private void writeSpectrum(BufferedWriter writer, DataPoint[] dps) throws IOException {
+        // detect intensity precision
         for (DataPoint dp : dps) {
-            writer.write(String.valueOf(dp.getMZ()));
+            writer.write(String.format(Locale.US, "%.5f", dp.getMZ()));
             writer.write(' ');
             writer.write(String.valueOf(dp.getIntensity()));
             writer.newLine();

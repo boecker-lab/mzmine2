@@ -27,7 +27,9 @@ class ChromatogramBuilder {
         dataPoints.addFirst(new ScanDataPoint(mostIntensiveScan, dp));
         double newMz = dp.getMZ();
         int middle = Arrays.binarySearch(scanNumbers, mostIntensiveScan);
-        if (middle < 0) throw new IllegalArgumentException("Most intensive scan not contained in raw data file");
+        if (middle < 0) {
+            throw new IllegalArgumentException("Most intensive #" + mostIntensiveScan + " scan not contained in raw data file");
+        }
         for (int j = middle + 1; j < scanNumbers.length && scanNumbers[j] < interval.upperEndpoint(); ++j) {
             final DataPoint point = findDatapoint(newMz, rawScans, scanNumbers[j], Math.max(5, ppm / 2d));
             if (point != null) {

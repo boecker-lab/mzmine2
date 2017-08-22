@@ -2,6 +2,7 @@ package net.sf.mzmine.modules.peaklistmethods.coelution;
 
 import com.google.common.collect.Range;
 import net.sf.mzmine.datamodel.Feature;
+import net.sf.mzmine.datamodel.Scan;
 
 import java.util.*;
 
@@ -55,9 +56,32 @@ class CorrelationBasedCoelutionFeatureDetector {
             }
         }
         final ChromatogramBuilder chr = new ChromatogramBuilder(ppm);
+
+        final Scan repr = feature.underlyingFeature.getDataFile().getScan(feature.underlyingFeature.getRepresentativeScanNumber());
+        int mostIntensive = feature.underlyingFeature.getRepresentativeScanNumber();
+        if (repr == null || repr.getMSLevel() != 1) {
+            // detect most intensive scan
+            mostIntensive = -1;
+            final int[] scanNumbers = feature.underlyingFeature.getScanNumbers();
+            double intensity = 0d;
+            for (int scanNumber : scanNumbers) {
+                final Scan scan = feature.underlyingFeature.getDataFile().getScan(scanNumber);
+                if (scan.getMSLevel() == 1) {
+                    final double i = feature.underlyingFeature.getDataPoint(scanNumber).getIntensity();
+                    if (i > intensity) {
+                        intensity = i;
+                        mostIntensive = scanNumber;
+                    }
+                }
+            }
+            if (mostIntensive < 0) {
+                throw new IllegalArgumentException("Given feature is not contained in MS data!");
+            }
+
+        }
         for (int i = 0; i < massList.length; ++i) {
             if (detected[i]) continue;
-            final Feature g = chr.detectFeature(massList[i], feature.interval, feature.getUnderlyingFeature().getRepresentativeScanNumber(), feature.underlyingFeature.getDataFile());
+            final Feature g = chr.detectFeature(massList[i], feature.interval, mostIntensive, feature.underlyingFeature.getDataFile());
             if (g == null) continue;
             {
                 // debug
