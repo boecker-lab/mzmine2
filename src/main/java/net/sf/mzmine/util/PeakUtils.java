@@ -19,15 +19,15 @@
 
 package net.sf.mzmine.util;
 
-import java.text.Format;
-
 import com.google.common.collect.Range;
-
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.IsotopePattern;
 import net.sf.mzmine.datamodel.PeakIdentity;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.main.MZmineCore;
+
+import java.text.Format;
+import java.util.Map;
 
 /**
  * Utilities for peaks and peak lists
@@ -173,6 +173,7 @@ public class PeakUtils {
      * Copies properties such as isotope pattern and charge from the source peak
      * to the target peak
      */
+    @SuppressWarnings("unchecked")
     public static void copyPeakProperties(Feature source, Feature target) {
 
 	// Copy isotope pattern
@@ -183,6 +184,13 @@ public class PeakUtils {
 	// Copy charge
 	int charge = source.getCharge();
 	target.setCharge(charge);
+
+        // kaidu edit
+        // copy annotations
+        for (Map.Entry<Class<?>, Object> entry : source.getAnnotations()) {
+            target.set((Class<Object>) entry.getKey(), entry.getValue());
+        }
+        // end kaidu edit
 
     }
 

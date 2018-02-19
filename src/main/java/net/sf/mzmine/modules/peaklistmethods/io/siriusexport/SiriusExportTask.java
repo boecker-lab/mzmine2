@@ -14,6 +14,7 @@ package net.sf.mzmine.modules.peaklistmethods.io.siriusexport;
 
 import net.sf.mzmine.datamodel.*;
 import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
+import net.sf.mzmine.modules.peaklistmethods.coelution.CoelutingPeaks;
 import net.sf.mzmine.parameters.ParameterSet;
 import net.sf.mzmine.taskcontrol.AbstractTask;
 import net.sf.mzmine.taskcontrol.TaskStatus;
@@ -434,6 +435,24 @@ public class SiriusExportTask extends AbstractTask {
 
     private static enum MsType {
         MS, MSMS, CORRELATED
+    }
+
+    private void writeCorrelationSpectrum(BufferedWriter writer, Feature feature) throws IOException {
+        final CoelutingPeaks peaks = feature.get(CoelutingPeaks.class, null);
+        if (peaks != null) {
+            writeCorrelationSpectrum(writer, peaks);
+        } else if (feature.getIsotopePattern() != null) {
+            writeSpectrum(writer, feature.getIsotopePattern().getDataPoints());
+        } else {
+            // write nothing
+            writer.write(String.valueOf(feature.getMZ()));
+            writer.write(' ');
+            writer.write("100.0");
+            writer.newLine();
+            writer.write("END IONS");
+            writer.newLine();
+            writer.newLine();
+        }
     }
 
 

@@ -19,27 +19,20 @@
 
 package net.sf.mzmine.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.text.Format;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import javax.annotation.Nonnull;
-
+import com.google.common.collect.Range;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.MassSpectrumType;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
 import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
 import net.sf.mzmine.main.MZmineCore;
-
 import org.apache.axis.encoding.Base64;
 
-import com.google.common.collect.Range;
+import javax.annotation.Nonnull;
+import java.io.*;
+import java.text.Format;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Scan related utilities
@@ -102,8 +95,8 @@ public class ScanUtils {
      *            m/z range maximum
      * @return double[2] containing base peak m/z and intensity
      */
-    public static @Nonnull DataPoint findBasePeak(@Nonnull Scan scan,
-	    @Nonnull Range<Double> mzRange) {
+    public static DataPoint findBasePeak(@Nonnull Scan scan,
+                                         @Nonnull Range<Double> mzRange) {
 
 	DataPoint dataPoints[] = scan.getDataPointsByMass(mzRange);
 	DataPoint basePeak = null;
@@ -164,16 +157,9 @@ public class ScanUtils {
     }
 
     /**
-     * Binning modes
-     */
-    public static enum BinningType {
-	SUM, MAX, MIN, AVG
-    }
-
-    /**
      * This method bins values on x-axis. Each bin is assigned biggest y-value
      * of all values in the same bin.
-     * 
+     *
      * @param x
      *            X-coordinates of the data
      * @param y
@@ -345,7 +331,7 @@ public class ScanUtils {
     /**
      * Returns index of m/z value in a given array, which is closest to given
      * value, limited by given m/z tolerance. We assume the m/z array is sorted.
-     * 
+     *
      * @return index of best match, or -1 if no datapoint was found
      */
     public static int findClosestDatapoint(double key, double mzValues[],
@@ -497,7 +483,7 @@ public class ScanUtils {
 
     /**
      * Find the highest data point in array
-     * 
+     *
      */
     public static @Nonnull DataPoint findTopDataPoint(
 	    @Nonnull DataPoint dataPoints[]) {
@@ -535,7 +521,7 @@ public class ScanUtils {
 
 	return Range.closed(lowMz, highMz);
     }
-    
+
     /**
      * Find the RT range of given scans. We assume there is at least one scan.
      */
@@ -608,6 +594,13 @@ public class ScanUtils {
 	byte[] bytes = Base64.decode(new String(encodedData));
 	DataPoint dataPoints[] = decodeDataPointsFromBytes(bytes);
 	return dataPoints;
+    }
+
+    /**
+     * Binning modes
+     */
+    public static enum BinningType {
+        SUM, MAX, MIN, AVG
     }
 
 }

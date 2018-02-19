@@ -19,7 +19,7 @@
 
 package net.sf.mzmine.modules.peaklistmethods.peakpicking.deconvolution;
 
-import java.util.Arrays;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
@@ -186,7 +186,7 @@ public class ResolvedPeak implements Feature {
         if (msmsRange == 0)
         	searchingRange = rawDataPointsMZRange;
         if (RTRangeMSMS == 0)
-        	searchingRangeRT =  rawDataPointsRTRange;
+        	searchingRangeRT = dataFile.getDataRTRange(1);
         
         fragmentScan = ScanUtils.findBestFragmentScan(dataFile,
         		searchingRangeRT, searchingRange);
@@ -325,4 +325,32 @@ public class ResolvedPeak implements Feature {
         return peakInfo;
     }
     //End dulab Edit
+
+    // kaidu edit
+
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
+
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 }

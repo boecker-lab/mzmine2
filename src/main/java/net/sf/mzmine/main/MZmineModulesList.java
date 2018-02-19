@@ -24,6 +24,7 @@ import net.sf.mzmine.modules.masslistmethods.chromatogrambuilder.ChromatogramBui
 import net.sf.mzmine.modules.masslistmethods.shoulderpeaksfilter.ShoulderPeaksFilterModule;
 import net.sf.mzmine.modules.peaklistmethods.alignment.join.JoinAlignerModule;
 import net.sf.mzmine.modules.peaklistmethods.alignment.ransac.RansacAlignerModule;
+import net.sf.mzmine.modules.peaklistmethods.coelution.PeakGroupingModule;
 import net.sf.mzmine.modules.peaklistmethods.dataanalysis.clustering.ClusteringModule;
 import net.sf.mzmine.modules.peaklistmethods.dataanalysis.heatmaps.HeatMapModule;
 import net.sf.mzmine.modules.peaklistmethods.dataanalysis.projectionplots.CDAPlotModule;
@@ -127,8 +128,8 @@ public class MZmineModulesList {
       // Raw data methods
       RawDataImportModule.class, RawDataExportModule.class, MassDetectionModule.class,
       ShoulderPeaksFilterModule.class, ChromatogramBuilderModule.class,
-      ADAPChromatogramBuilderModule.class, 
-      // Not ready for prime time: ADAP3DModule.class,  
+      ADAPChromatogramBuilderModule.class,
+      // Not ready for prime time: ADAP3DModule.class,
       GridMassModule.class,
       ManualPeakPickerModule.class, MsMsPeakPickerModule.class, ScanFiltersModule.class,
       CropFilterModule.class, BaselineCorrectionModule.class, AlignScansModule.class,
@@ -151,6 +152,10 @@ public class MZmineModulesList {
 
       // Isotopes
       IsotopeGrouperModule.class, IsotopePatternCalculator.class,
+
+          // Edit: kaidu
+          PeakGroupingModule.class,
+          // End edit
 
       // Peak detection
       SmoothingModule.class, DeconvolutionModule.class, ShapeModelerModule.class,

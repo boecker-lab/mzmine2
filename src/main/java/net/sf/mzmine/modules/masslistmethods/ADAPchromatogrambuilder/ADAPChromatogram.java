@@ -22,13 +22,8 @@
 
 package net.sf.mzmine.modules.masslistmethods.ADAPchromatogrambuilder;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Vector;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 
 import javax.annotation.Nonnull;
 
@@ -55,7 +50,6 @@ import net.sf.mzmine.datamodel.impl.SimplePeakInformation;
  */
 public class ADAPChromatogram implements Feature {
     private SimplePeakInformation peakInfo;
-
     // Data file of this chromatogram
     private RawDataFile dataFile;
 
@@ -97,7 +91,7 @@ public class ADAPChromatogram implements Feature {
     private double weightedMzSum = 0;
     private int weightedMzN = 0;
     private double sumOfWeights = 0;
-    
+
     private double highPointMZ = 0;
 
     private final int scanNumbers[];
@@ -125,7 +119,7 @@ public class ADAPChromatogram implements Feature {
     }
     public List getIntensitiesForCDFOut(){
         // Need all scans with no intensity to be set to zero
-        
+
         List intensityList = new ArrayList();
 
         for (int curScanNum=0; curScanNum<scanNumbers.length; curScanNum++){
@@ -141,7 +135,7 @@ public class ADAPChromatogram implements Feature {
 
     }
 
-    
+
     public int findNumberOfContinuousPointsAboveNoise(double noise){
         // sort the array containing all of the scan numbers of the point added
         // loop over the sorted array now.
@@ -161,7 +155,7 @@ public class ADAPChromatogram implements Feature {
         DataPoint curDataPoint;
 
         for (int i=1; i < scanListLength; i ++ ){
-            
+
 
 
 
@@ -192,21 +186,21 @@ public class ADAPChromatogram implements Feature {
 
         }
 
-        
+
 
         //System.out.println("bestCount");
         //System.out.println(bestCount);
-        
+
         // plus one because first point considered in advancing curcount is actualy going to be the second point/
         return bestCount+1;
-        
+
 
     }
 
     /**
      * This method adds a MzPeak to this Chromatogram. All values of this
      * Chromatogram (rt, m/z, intensity and ranges) are updated on request
-     * 
+     *
      * @param mzValue
      */
     public void addMzPeak(int scanNumber, DataPoint mzValue) {
@@ -225,7 +219,7 @@ public class ADAPChromatogram implements Feature {
 
         }
 
-   
+
 
         dataPointsMap.put(scanNumber, mzValue);
         lastMzPeak = mzValue;
@@ -273,7 +267,7 @@ public class ADAPChromatogram implements Feature {
     /**
      * This method returns a string with the basic information that defines this
      * peak
-     * 
+     *
      * @return String information
      */
     public String toString() {
@@ -547,4 +541,32 @@ public class ADAPChromatogram implements Feature {
     public SimplePeakInformation getPeakInformation(){
         return peakInfo;
     }
+
+    // kaidu edit
+
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+    // end kaidu edit
 }

@@ -68,7 +68,7 @@ public class SimpleFeature implements Feature {
 
   /**
    * Initializes a new peak using given values
-   * 
+   *
    */
   public SimpleFeature(RawDataFile dataFile, double MZ, double RT, double height, double area,
       int[] scanNumbers, DataPoint[] dataPointsPerScan, FeatureStatus peakStatus,
@@ -154,9 +154,9 @@ public class SimpleFeature implements Feature {
     this.rtRange = Range.closed(
         msdkFeatureChromatogram.getRtRange().lowerEndpoint().doubleValue() / 60.0,
         msdkFeatureChromatogram.getRtRange().upperEndpoint().doubleValue() / 60.0);
-    this.mzRange = Range.encloseAll(Doubles.asList(mzValues));    
+    this.mzRange = Range.encloseAll(Doubles.asList(mzValues));
     this.intensityRange = Range.closed(0.0, msdkFeature.getHeight().doubleValue());
-    
+
     this.scanNumbers = new int[rtValues.length];
     this.dataPointsPerScan = new DataPoint[scanNumbers.length];
     for (int i = 0; i < scanNumbers.length; i++) {
@@ -169,8 +169,8 @@ public class SimpleFeature implements Feature {
     this.representativeScan = RawDataFileUtils.getClosestScanNumber(dataFile, this.rt);
     this.fragmentScanNumber = ScanUtils.findBestFragmentScan(dataFile,
         this.rtRange, this.mzRange);
-    
-    for (int i = 0; i < scanNumbers.length; i++) {   
+
+    for (int i = 0; i < scanNumbers.length; i++) {
       if (height < dataPointsPerScan[i].getIntensity()) {
           representativeScan = scanNumbers[i];
       }
@@ -368,7 +368,7 @@ public class SimpleFeature implements Feature {
 
   // dulab Edit
   public void outputChromToFile() {
-  
+
   }
 
   public void setPeakInformation(SimplePeakInformation peakInfoIn) {
@@ -379,5 +379,38 @@ public class SimpleFeature implements Feature {
     return peakInfo;
   }
   // End dulab Edit
+
+    // kaidu edit
+    @Override
+    public SimpleFeature clone() {
+        return new SimpleFeature(this);
+    }
+
+    protected HashMap<Class<? extends Object>, Object> annotations = new HashMap<>();
+
+
+    @Override
+    public <T> void set(Class<T> type, T value) {
+        annotations.put(type, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> type, T defaultValue) {
+        final Object value = annotations.get(type);
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return (T) value;
+        }
+    }
+
+    @Override
+    public Set<Map.Entry<Class<?>, Object>> getAnnotations() {
+        return Collections.unmodifiableSet(annotations.entrySet());
+    }
+
+
+    // End kaidu edit
 
 }
