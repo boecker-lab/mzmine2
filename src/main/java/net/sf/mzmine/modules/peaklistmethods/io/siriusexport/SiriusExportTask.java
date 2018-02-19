@@ -44,7 +44,6 @@ public class SiriusExportTask extends AbstractTask {
 	// private final boolean fractionalMZ;
 	private final String massListName;
     protected double progress, totalProgress;
-    protected final SiriusExportParameters.MERGE_MODE mergeMsMs;
 
 
     public double getFinishedPercentage() {
@@ -57,15 +56,8 @@ public class SiriusExportTask extends AbstractTask {
 
 	SiriusExportTask(ParameterSet parameters) {
 		this.peakLists = parameters.getParameter(SiriusExportParameters.PEAK_LISTS).getValue().getMatchingPeakLists();
-
 		this.fileName = parameters.getParameter(SiriusExportParameters.FILENAME).getValue();
-
-		// this.fractionalMZ =
-		// parameters.getParameter(SiriusExportParameters.FRACTIONAL_MZ)
-		// .getValue();
-
 		this.massListName = parameters.getParameter(SiriusExportParameters.MASS_LIST).getValue();
-        this.mergeMsMs = parameters.getParameter(SiriusExportParameters.MERGE).getValue();
     }
 
 	public void run() {
@@ -280,53 +272,28 @@ public class SiriusExportTask extends AbstractTask {
 
         // for each MS/MS write corresponding MS1 and MSMS spectrum
         for (Feature f : row.getPeaks()) {
-            if (mergeMsMs == SiriusExportParameters.MERGE_MODE.MERGE_CONSECUTIVE_SCANS)
-                toMerge.clear();
             if (f.getFeatureStatus() == Feature.FeatureStatus.DETECTED && f.getMostIntenseFragmentScanNumber() >= 0) {
                 final int[] scanNumbers = f.getScanNumbers().clone();
                 Arrays.sort(scanNumbers);
-                int[] fs = fragmentScans.get(f.getDataFile().getName());
-                int startWith = scanNumbers[0];
-                int j = Arrays.binarySearch(fs, startWith);
-                if (j < 0) j = (-j - 1);
-                for (int k = j; k < fs.length; ++k) {
-                    final Scan scan = f.getDataFile().getScan(fs[k]);
-                    if (scan.getMSLevel() > 1 && Math.abs(scan.getPrecursorMZ() - f.getMZ()) < 0.1) {
-                            /*
-                            if (includeMs1) {
-                                // find precursor scan
-                                int prec = Arrays.binarySearch(scanNumbers, fs[k]);
-                                if (prec < 0) prec = -prec - 1;
-                                prec = Math.max(0, prec - 1);
-                                for (; prec < scanNumbers.length && scanNumbers[prec] < fs[k]; ++prec) {
-                                    final Scan precursorScan = f.getDataFile().getScan(scanNumbers[prec]);
-                                    if (precursorScan.getMSLevel() == 1) {
-                                        writeHeader(writer, row, f.getDataFile(), polarity, MsType.MS, precursorScan.getScanNumber());
-                                        writeSpectrum(writer, massListName != null ? precursorScan.getMassList(massListName).getDataPoints() : precursorScan.getDataPoints());
-                                    }
-                                }
-                            }
-                            */ // Do not include MS1 scans (except for isotope pattern)
-                        if (mergeMsMs == SiriusExportParameters.MERGE_MODE.NO_MERGE) {
-                            writeHeader(writer, row, f.getDataFile(), polarity, MsType.MSMS, scan.getScanNumber());
-                            writeSpectrum(writer, massListName != null ? scan.getMassList(massListName).getDataPoints() : scan.getDataPoints());
-                        } else {
-                            if (mergeMsMs == SiriusExportParameters.MERGE_MODE.MERGE_OVER_SAMPLES)
-                                sources.add(f.getDataFile().getName());
-                            toMerge.add(massListName != null ? scan.getMassList(massListName).getDataPoints() : scan.getDataPoints());
+                final int fscan = f.getMostIntenseFragmentScanNumber();
+                final Scan scan = f.getDataFile().getScan(fscan);
+                if (scan.getMSLevel() > 1 && Math.abs(scan.getPrecursorMZ() - f.getMZ()) < 0.1) {
+                    // find precursor scan
+                    int prec = Arrays.binarySearch(scanNumbers, fscan);
+                    if (prec < 0) prec = -prec - 1;
+                    prec = Math.max(0, prec - 1);
+                    for (; prec < scanNumbers.length && scanNumbers[prec] < fscan; ++prec) {
+                        final Scan precursorScan = f.getDataFile().getScan(scanNumbers[prec]);
+                        if (precursorScan.getMSLevel() == 1) {
+                            writeHeader(writer, row, f.getDataFile(), polarity, MsType.MS, precursorScan.getScanNumber());
+                            writeSpectrum(writer, massListName != null ? precursorScan.getMassList(massListName).getDataPoints() : precursorScan.getDataPoints());
                         }
                     }
-                }
-                if (mergeMsMs == SiriusExportParameters.MERGE_MODE.MERGE_CONSECUTIVE_SCANS && toMerge.size() > 0) {
-                    writeHeader(writer, row, f.getDataFile(), polarity, MsType.MSMS, null);
-                    writeSpectrum(writer, merge(f.getMZ(), toMerge));
+                    writeHeader(writer, row, f.getDataFile(), polarity, MsType.MSMS, scan.getScanNumber());
+                    writeSpectrum(writer, massListName != null ? scan.getMassList(massListName).getDataPoints() : scan.getDataPoints());
                 }
             }
             ++progress;
-        }
-        if (mergeMsMs == SiriusExportParameters.MERGE_MODE.MERGE_OVER_SAMPLES && toMerge.size() > 0) {
-            writeHeader(writer, row, row.getBestPeak().getDataFile(), polarity, MsType.MSMS, null, sources);
-            writeSpectrum(writer, merge(row.getAverageMZ(), toMerge));
         }
     }
 
@@ -401,21 +368,6 @@ public class SiriusExportTask extends AbstractTask {
         }
     }
 
-    private void writeCorrelationSpectrum(BufferedWriter writer, Feature feature) throws IOException {
-        if (feature.getIsotopePattern() != null) {
-            writeSpectrum(writer, feature.getIsotopePattern().getDataPoints());
-        } else {
-            // write nothing
-            writer.write(String.valueOf(feature.getMZ()));
-            writer.write(' ');
-            writer.write("100.0");
-            writer.newLine();
-            writer.write("END IONS");
-            writer.newLine();
-            writer.newLine();
-        }
-    }
-
     private void writeSpectrum(BufferedWriter writer, DataPoint[] dps) throws IOException {
         for (DataPoint dp : dps) {
             writer.write(String.valueOf(dp.getMZ()));
@@ -453,6 +405,24 @@ public class SiriusExportTask extends AbstractTask {
             writer.newLine();
             writer.newLine();
         }
+    }
+
+    private void writeCorrelationSpectrum(BufferedWriter writer, CoelutingPeaks peaks) throws IOException {
+        for (int i = 0; i < peaks.size(); ++i) {
+            writer.write(String.valueOf(peaks.getMz(i)));
+            writer.write(' ');
+            writer.write(String.valueOf(peaks.getIntensity(i)));
+            writer.write(' ');
+            writer.write(String.valueOf(peaks.getCorrelation(i)));
+            if (!peaks.getAnnotation(i).isUnknown() || peaks.getAnnotation(i).getIsotopicPeak() > 0 || (i + 1 < peaks.size() && peaks.getAnnotation(i + 1).getIsotopicPeak() > 0)) {
+                writer.write(' ');
+                writer.write(peaks.getAnnotation(i).toString());
+            }
+            writer.newLine();
+        }
+        writer.write("END IONS");
+        writer.newLine();
+        writer.newLine();
     }
 
 

@@ -15,7 +15,6 @@ package net.sf.mzmine.modules.peaklistmethods.io.siriusexport;
 import net.sf.mzmine.parameters.Parameter;
 import net.sf.mzmine.parameters.dialogs.ParameterSetupDialog;
 import net.sf.mzmine.parameters.impl.SimpleParameterSet;
-import net.sf.mzmine.parameters.parametertypes.ComboParameter;
 import net.sf.mzmine.parameters.parametertypes.MassListParameter;
 import net.sf.mzmine.parameters.parametertypes.filenames.FileNameParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsParameter;
@@ -27,11 +26,8 @@ import java.awt.*;
 public class SiriusExportParameters extends SimpleParameterSet
 {
 
-    public static final ComboParameter<MERGE_MODE> MERGE = new ComboParameter<MERGE_MODE>(
-            "Merge mode", "How to merge MS/MS spectra", MERGE_MODE.values(), MERGE_MODE.MERGE_CONSECUTIVE_SCANS);
-
     public SiriusExportParameters() {
-        super(new Parameter[]{PEAK_LISTS, FILENAME, MERGE, MASS_LIST});
+        super(new Parameter[]{PEAK_LISTS, FILENAME, MASS_LIST});
     }
 
 
@@ -58,22 +54,6 @@ public class SiriusExportParameters extends SimpleParameterSet
 */
 
     public static final MassListParameter MASS_LIST = new MassListParameter();
-
-    public static enum MERGE_MODE {
-        NO_MERGE("Do not merge"),
-        MERGE_CONSECUTIVE_SCANS("Merge consecutive scans"),
-        MERGE_OVER_SAMPLES("Merge all MS/MS belonging to the same feature");
-        private final String name;
-
-        private MERGE_MODE(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
 
     public ExitCode showSetupDialog(Window parent, boolean valueCheckRequired) {
         String message = "<html>SIRIUS Module Disclaimer:" +

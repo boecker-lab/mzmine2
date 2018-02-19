@@ -18,13 +18,8 @@
 
 package net.sf.mzmine.datamodel.impl;
 
-import java.util.Arrays;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.collect.Range;
 import com.google.common.primitives.Doubles;
-
 import io.github.msdk.datamodel.Chromatogram;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
@@ -33,6 +28,9 @@ import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.util.PeakUtils;
 import net.sf.mzmine.util.RawDataFileUtils;
 import net.sf.mzmine.util.ScanUtils;
+
+import javax.annotation.Nonnull;
+import java.util.*;
 
 /**
  * This class is a simple implementation of the peak interface.
