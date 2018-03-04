@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class SiriusExportTask extends AbstractTask {
@@ -248,9 +249,18 @@ public class SiriusExportTask extends AbstractTask {
         return fragmentScans;
     }
 
+    private static Logger logger = Logger.getLogger(SiriusExportTask.class
+            .getName());
+
     private void exportPeakListRow(PeakListRow row, BufferedWriter writer, final HashMap<String, int[]> fragmentScans) throws IOException {
-        if (isSkipRow(row))
+
+        final int skipRow = searchForMs1AndMs2InRow(row);
+
+        if (skipRow == 0)
             return;
+        else if (skipRow == 1) {
+            logger.warning("Alignment of row " + row.getID() + " is suspicous: There is neither an isotope pattern nor an MSMS scan associated with any detected feature in this row. However, there are isotope patterns or MSMS scans for ESTIMATED features in this row. This might be an indication for an alignment problem. We highly recommend to check the deconvolution and alignment parameters!");
+        }
         // get row charge and polarity
         char polarity = 0;
         for (Feature f : row.getPeaks()) {
@@ -265,14 +275,23 @@ public class SiriusExportTask extends AbstractTask {
         }
         // write correlation spectrum
         writeHeader(writer, row, row.getBestPeak().getDataFile(), polarity, MsType.CORRELATED, -1);
+        if (skipRow == 1) {
+            writer.write("WARNING=POSSIBLE ALIGNMENT ERROR\n");
+        }
         writeCorrelationSpectrum(writer, row.getBestPeak());
 
         List<DataPoint[]> toMerge = new ArrayList<>();
         List<String> sources = new ArrayList<>();
 
+        boolean hasDetectedMs2 = false;
+        for (Feature f : row.getPeaks()) {
+            if (f.getFeatureStatus() == Feature.FeatureStatus.DETECTED && f.getMostIntenseFragmentScanNumber() >= 0)
+                hasDetectedMs2 = true;
+        }
+
         // for each MS/MS write corresponding MS1 and MSMS spectrum
         for (Feature f : row.getPeaks()) {
-            if (f.getFeatureStatus() == Feature.FeatureStatus.DETECTED && f.getMostIntenseFragmentScanNumber() >= 0) {
+            if (f.getFeatureStatus() == Feature.FeatureStatus.DETECTED && f.getMostIntenseFragmentScanNumber() >= 0 || (!hasDetectedMs2 && f.getFeatureStatus() == Feature.FeatureStatus.ESTIMATED && f.getMostIntenseFragmentScanNumber() >= 0)) {
                 final int[] scanNumbers = f.getScanNumbers().clone();
                 Arrays.sort(scanNumbers);
                 final int fscan = f.getMostIntenseFragmentScanNumber();
@@ -298,14 +317,27 @@ public class SiriusExportTask extends AbstractTask {
     }
 
     private boolean isSkipRow(PeakListRow row) {
+        return searchForMs1AndMs2InRow(row) == 0;
+    }
+
+    // 2 ok
+    // 1 suspicuous
+    // 0 none
+    private int searchForMs1AndMs2InRow(PeakListRow row) {
         // skip rows which have no isotope pattern and no MS/MS spectrum
+        boolean atLeastOne = false;
         for (Feature f : row.getPeaks()) {
             if (f.getFeatureStatus() == Feature.FeatureStatus.DETECTED) {
-                if ((f.getIsotopePattern() != null && f.getIsotopePattern().getDataPoints().length > 1) || f.getMostIntenseFragmentScanNumber() >= 0)
-                    return false;
+                if ((f.getIsotopePattern() != null && f.getIsotopePattern().getDataPoints().length > 1) || f.getMostIntenseFragmentScanNumber() >= 0) {
+                    return 2;
+                }
+            } else if (f.getFeatureStatus() == Feature.FeatureStatus.ESTIMATED) {
+                if ((f.getIsotopePattern() != null && f.getIsotopePattern().getDataPoints().length > 1) || f.getMostIntenseFragmentScanNumber() >= 0) {
+                    atLeastOne = true;
+                }
             }
         }
-        return true;
+        return atLeastOne ? 1 : 0;
     }
 
     private void writeHeader(BufferedWriter writer, PeakListRow row, RawDataFile raw, char polarity, MsType msType, Integer scanNumber) throws IOException {
