@@ -1,5 +1,4 @@
-/*
- * Copyright 2006-2015 The MZmine 2 Development Team
+/* Copyright 2006-2015 The MZmine 2 Development Team
  * 
  * This file is part of MZmine 2.
  * 
@@ -16,36 +15,18 @@
  * MZmine 2; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package net.sf.mzmine.parameters.parametertypes;
 
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+package net.sf.mzmine.modules.peaklistmethods.alignment.hierarchical;
 
-public class StringComponent extends JPanel {
+public class ClusteringProgression {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+    private double progress = 0d;
 
-    private final JTextField textField;
-
-    public StringComponent(int inputsize) {
-    	textField = new JTextField(inputsize);
-    	add(textField);
+    public void setProgress(double value) {
+        progress = value;
     }
 
-    public void setText(String text) {
-    	textField.setText(text);
-    }
-
-    public String getText() {
-	return textField.getText();
-    }
-
-    @Override
-    public void setToolTipText(String toolTip) {
-    	textField.setToolTipText(toolTip);
+    public double getProgress() {
+        return progress;
     }
 }

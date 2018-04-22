@@ -16,36 +16,28 @@
  * MZmine 2; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package net.sf.mzmine.parameters.parametertypes;
 
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+package net.sf.mzmine.modules.peaklistmethods.alignment.hierarchical;
 
-public class StringComponent extends JPanel {
+public enum ClusteringLinkageStrategyType {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+    AVERAGE("Average"), // Distance of a new cluster is the Average distance of
+                        // children
+    COMPLETE("Complete"), // Distance of a new cluster is the Max distance over
+                          // all children
+    SINGLE("Single"); // Distance of a new cluster is the Min distance over all
+                      // children
+    // WEIGHTED("Weighted"); // Distance of a new cluster is the Weighted
+    // distance over all children
 
-    private final JTextField textField;
+    private final String name;
 
-    public StringComponent(int inputsize) {
-    	textField = new JTextField(inputsize);
-    	add(textField);
+    ClusteringLinkageStrategyType(String name) {
+        this.name = name;
     }
 
-    public void setText(String text) {
-    	textField.setText(text);
+    public String toString() {
+        return this.name;
     }
 
-    public String getText() {
-	return textField.getText();
-    }
-
-    @Override
-    public void setToolTipText(String toolTip) {
-    	textField.setToolTipText(toolTip);
-    }
 }

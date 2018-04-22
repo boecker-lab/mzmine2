@@ -16,36 +16,36 @@
  * MZmine 2; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
-package net.sf.mzmine.parameters.parametertypes;
 
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+package net.sf.mzmine.modules.peaklistmethods.alignment.hierarchical;
 
-public class StringComponent extends JPanel {
+import java.util.Comparator;
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+import net.sf.mzmine.datamodel.RawDataFile;
+import net.sf.mzmine.util.SortingDirection;
 
-    private final JTextField textField;
+/**
+ * 
+ * 
+ */
+public class RawDataFileSorter implements Comparator<RawDataFile> {
 
-    public StringComponent(int inputsize) {
-    	textField = new JTextField(inputsize);
-    	add(textField);
+    private SortingDirection direction;
+
+    public RawDataFileSorter(SortingDirection direction) {
+        this.direction = direction;
     }
 
-    public void setText(String text) {
-    	textField.setText(text);
+    public int compare(RawDataFile rdf1, RawDataFile rdf2) {
+
+        String rdf1Value = rdf1.getName();
+        String rdf2Value = rdf2.getName();
+
+        if (direction == SortingDirection.Ascending)
+            return rdf1Value.compareTo(rdf2Value);
+        else
+            return rdf2Value.compareTo(rdf1Value);
+
     }
 
-    public String getText() {
-	return textField.getText();
-    }
-
-    @Override
-    public void setToolTipText(String toolTip) {
-    	textField.setToolTipText(toolTip);
-    }
 }
