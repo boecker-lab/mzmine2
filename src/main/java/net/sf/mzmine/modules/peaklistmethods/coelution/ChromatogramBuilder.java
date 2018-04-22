@@ -80,7 +80,7 @@ class ChromatogramBuilder {
         TreeSet<Double> noisePeaks = new TreeSet<>();
         double threshold = Double.POSITIVE_INFINITY;
         final DataPoint[] dataPoints = scan.getDataPoints();
-        int quantile5 = Math.min(2, (int) Math.floor(dataPoints.length * 0.05));
+        int quantile5 = Math.max(2, (int) Math.floor(dataPoints.length * 0.05));
         final double allowedDifference = Math.max(featureMz, 200) * 1e-6 * ppm;
         final double from = featureMz - allowedDifference, to = featureMz + allowedDifference;
         DataPoint mostIntensive = null;
